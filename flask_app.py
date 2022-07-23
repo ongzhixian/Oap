@@ -33,14 +33,38 @@ x = oandaApi.get_account_instruments(get_local=True)
 instruments = x['instruments']
 
 for instrument in instruments:
-    logging.debug(instrument['name'])
-    instrument_name = instrument['name']
-    oandaApi.get_account_candles(instrument_name, 'D')
-    sleep(1)
+    tags = instrument['tags']
+    tag_map = {}
+    for tag in tags:
+        tag_map[tag['type']] = tag['name']
+    
+    asset_class = None
+    if 'ASSET_CLASS' in tag_map:
+        asset_class = tag_map['ASSET_CLASS']
+
+    kid_asset_class = None
+    if 'KID_ASSET_CLASS' in tag_map:
+        kid_asset_class = tag_map['KID_ASSET_CLASS']
+
+    d = (instrument['name'], 
+        instrument['displayName'], 
+        instrument['type'],
+        asset_class,
+        kid_asset_class)
+    # logging.debug(instrument['name'])
+    # logging.debug(instrument['displayName'])
+    # logging.debug(instrument['type'])
+    logging.debug(d)
+
+
+# for instrument in instruments:
+#     logging.debug(instrument['name'])
+#     instrument_name = instrument['name']
+#     oandaApi.get_account_candles(instrument_name, 'D')
+#     sleep(1)
 
 # candle_spec = 'EUR_USD:D:M'
 # oandaApi.get_latest_candles(candle_spec)
-
 
 
 # if __name__ == '__main__':
