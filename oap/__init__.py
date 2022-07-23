@@ -6,3 +6,4 @@ app = Flask(__name__,
     template_folder='html')
 
 from oap.api import *
+from oap.pages import *
