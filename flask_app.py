@@ -23,6 +23,7 @@ def get_secrets(app_path):
         return json.load(app_settings_file)
 
 def dump_instrument_class(instrument_list):
+    d_list = []
     for instrument in instrument_list:
         tags = instrument['tags']
         tag_map = {}
@@ -46,61 +47,75 @@ def dump_instrument_class(instrument_list):
         # logging.debug(instrument['displayName'])
         # logging.debug(instrument['type'])
         logging.debug(d)
+        d_list.append(d)
+    import csv
+    
+    with open('./data-dump/oda-simplified-instruments.csv', 'w', encoding='utf8', newline='') as out_file:
+        csv_writer = csv.writer(out_file)
+        csv_writer.writerows(d_list)
 
 
 def fetch_candles_data(instrument_list):
-    # for instrument in instruments:
-    #     logging.debug(instrument['name'])
-    #     instrument_name = instrument['name']
-    #     oandaApi.get_account_candles(instrument_name, 'D')
-    #     sleep(1)
+    for instrument in instrument_list:
+        logging.debug(instrument['name'])
+        instrument_name = instrument['name']
+        oandaApi.get_account_candles(instrument_name, 'D')
+        sleep(1)
     pass
+
+# def analysis2():
+#     from datetime import datetime
+#     import pandas as pd
+#     # import matplotlib.pyplot as plt
+#     import mplfinance as mpf
+
+#     with open('./data-dump/account-candles-XAU_USD-D.json', 'r', encoding='UTF8') as in_file:
+#         json_data = json.load(in_file)
+
+#     candles = json_data['candles']
+#     flatten_data = [
+#         [ 
+#             datetime.strptime(x['time'], "%Y-%m-%dT%H:%M:%S.%f000Z"), 
+#             bool(x['complete']), 
+#             int(x['volume']), 
+#             float(x['mid']['o']), 
+#             float(x['mid']['h']), 
+#             float(x['mid']['l']), 
+#             float(x['mid']['c'])
+#         ] for x in candles]
+#     df = pd.DataFrame(
+#         flatten_data, 
+#         columns=['time','complete', 'Volume', 'Open', 'High', 'Low', 'Close'])
+
+#     df['ma'] = df['Close'].rolling(20).mean()
+#     df['ewm'] = df['Close'].ewm(span=20, adjust=False).mean()
+
+#     print(f"df shape: {df.shape}")
+
+#     dfx = df.tail(50).set_index('time')
+#     mpf.plot(dfx, type='line', 
+#         mav=(20, 39),
+#         hlines=dict(hlines=[1850,1865],colors=['g','r'],linestyle='-.',linewidths=(1,1)),
+#         volume=True,
+#         savefig='./pic-dump/sample.png')
+
+################################################################################
 
 setup_default_logging()
 app_path = path.dirname(path.abspath(__file__))
 app_secrets = get_secrets(app_path)
 
 oandaApi = OandaApi(app_secrets, app_path)
-# oandaApi.get_account_summary()
-# x = oandaApi.get_account_instruments(get_local=True)
-# instruments = x['instruments']
-# dump_instrument_class(instruments)
+oandaApi.get_account_summary()
+x = oandaApi.get_account_instruments(get_local=True)
+instruments = x['instruments']
+dump_instrument_class(instruments)
 # fetch_candles_data(instruments)
 
-from datetime import datetime
-import pandas as pd
-# import matplotlib.pyplot as plt
-import mplfinance as mpf
 
-with open('./data-dump/account-candles-XAU_USD-D.json', 'r', encoding='UTF8') as in_file:
-    json_data = json.load(in_file)
 
-candles = json_data['candles']
-flatten_data = [
-    [ 
-        datetime.strptime(x['time'], "%Y-%m-%dT%H:%M:%S.%f000Z"), 
-        bool(x['complete']), 
-        int(x['volume']), 
-        float(x['mid']['o']), 
-        float(x['mid']['h']), 
-        float(x['mid']['l']), 
-        float(x['mid']['c'])
-    ] for x in candles]
-df = pd.DataFrame(
-    flatten_data, 
-    columns=['time','complete', 'Volume', 'Open', 'High', 'Low', 'Close'])
 
-df['ma'] = df['Close'].rolling(20).mean()
-df['ewm'] = df['Close'].ewm(span=20, adjust=False).mean()
 
-print(f"df shape: {df.shape}")
-
-dfx = df.tail(50).set_index('time')
-mpf.plot(dfx, type='line', 
-    mav=(20, 39),
-    hlines=dict(hlines=[1850,1865],colors=['g','r'],linestyle='-.',linewidths=(1,1)),
-    volume=True,
-    savefig='./pic-dump/sample.png')
 
 
 # KIV
