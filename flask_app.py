@@ -6,6 +6,14 @@ from os import path
 from oap import app
 from oap.modules.oanda import OandaApi
 
+import pandas as pd
+from datetime import datetime
+
+import requests
+import matplotlib.pyplot as plt
+import mplfinance as mpf
+
+
 def setup_default_logging():
     try:
         console_logger = logging.StreamHandler()
@@ -63,6 +71,61 @@ def fetch_candles_data(instrument_list):
         sleep(1)
     pass
 
+
+def dump_chart_for_instrument(instrument, ma_period=20, ema_period=20):
+    # instrument = 'XAU_USD'
+    with open(f'./data-dump/account-candles-{instrument}-D.json', 'r', encoding='UTF8') as in_file:
+        json_data = json.load(in_file)
+    instrument = json_data['instrument']
+    granularity = json_data['granularity']
+    candles = json_data['candles']
+    flatten_data = [
+        [ 
+            datetime.strptime(x['time'], "%Y-%m-%dT%H:%M:%S.%f000Z"), 
+            bool(x['complete']), 
+            int(x['volume']), 
+            float(x['mid']['o']), 
+            float(x['mid']['h']), 
+            float(x['mid']['l']), 
+            float(x['mid']['c'])
+        ] for x in candles]
+    df = pd.DataFrame(
+        flatten_data, 
+        columns=['time','complete', 'Volume', 'Open', 'High', 'Low', 'Close'])
+
+    df['ma'] = df['Close'].rolling(ma_period).mean()
+    df['ewm'] = df['Close'].ewm(span=ema_period, adjust=False).mean()
+    index_df = df.set_index('time')
+
+    mpf.plot(index_df,type='line', volume=True, title='Sample close plot', savefig=f'./pic-dump/{instrument}-close-plot.png')
+
+    print(f"df shape: {df.shape}")
+
+
+def post_chart():
+    pass
+    url = 'http://localhost:31000/api/test/upload-file'
+    files = {
+        'upload_file': open('./pic-dump/XAU_USD-close-plot.png', 'rb')
+    }
+    # Files would be accessible like so in Flask:
+    # request.files
+    # ImmutableMultiDict([('upload_file', <FileStorage: 'XAU_USD-close-plot.png' (None)>)])
+
+    # The other correct way if you want more control
+    # files = {'upload_file': ('foobar.txt', open('file.txt','rb'), 'text/x-spam')}
+
+    values = {
+        'DB': 'photcat', 
+        'OUT': 'csv', 
+        'SHORT': 'short'
+    }
+    # Values would be accessible like so in Flask:
+    # request.form['DB']
+    # ImmutableMultiDict([('DB', 'photcat'), ('OUT', 'csv'), ('SHORT', 'short')])
+
+    r = requests.post(url, files=files, data=values)
+
 # def analysis2():
 #     from datetime import datetime
 #     import pandas as pd
@@ -106,13 +169,14 @@ app_path = path.dirname(path.abspath(__file__))
 app_secrets = get_secrets(app_path)
 
 oandaApi = OandaApi(app_secrets, app_path)
-oandaApi.get_account_summary()
+# oandaApi.get_account_summary()
 x = oandaApi.get_account_instruments(get_local=True)
 instruments = x['instruments']
-dump_instrument_class(instruments)
 # fetch_candles_data(instruments)
+# dump_instrument_class(instruments)
 
-
+# dump_chart_for_instrument('XAU_USD')
+post_chart()
 
 
 
