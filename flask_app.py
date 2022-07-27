@@ -72,7 +72,7 @@ def fetch_candles_data(instrument_list):
     pass
 
 
-def dump_chart_for_instrument(instrument, ma_period=20, ema_period=20):
+def dump_chart_for_instrument(instrument, instrument_display_name, ma_period=20, ema_period=20):
     # instrument = 'XAU_USD'
     with open(f'./data-dump/account-candles-{instrument}-D.json', 'r', encoding='UTF8') as in_file:
         json_data = json.load(in_file)
@@ -97,16 +97,16 @@ def dump_chart_for_instrument(instrument, ma_period=20, ema_period=20):
     df['ewm'] = df['Close'].ewm(span=ema_period, adjust=False).mean()
     index_df = df.set_index('time')
 
-    mpf.plot(index_df,type='line', volume=True, title='Sample close plot', savefig=f'./pic-dump/{instrument}-close-plot.png')
+    mpf.plot(index_df,type='line', volume=True, title=instrument_display_name, savefig=f'./pic-dump/{instrument}-close-plot.png')
 
     print(f"df shape: {df.shape}")
 
 
-def post_chart():
+def post_chart(instrument):
     pass
     url = 'http://localhost:31000/api/test/upload-file'
     files = {
-        'upload_file': open('./pic-dump/XAU_USD-close-plot.png', 'rb')
+        'upload_file': open(f'./pic-dump/{instrument}-close-plot.png', 'rb')
     }
     # Files would be accessible like so in Flask:
     # request.files
@@ -176,11 +176,13 @@ instruments = x['instruments']
 # dump_instrument_class(instruments)
 
 # dump_chart_for_instrument('XAU_USD')
-post_chart()
+# post_chart()
 
+# for instrument in instruments:
+#     dump_chart_for_instrument(instrument['name'], instrument['displayName'])
 
-
-
+for instrument in instruments:
+    post_chart(instrument['name'])
 
 # KIV
 # candle_spec = 'EUR_USD:D:M'

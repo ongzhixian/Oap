@@ -131,3 +131,4 @@ dmypy.json
 # Custom
 *-secrets.json
 data-dump/
+pic-dump/
