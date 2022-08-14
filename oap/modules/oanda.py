@@ -83,7 +83,7 @@ class OandaApi(object):
                 f"{self.api_url}/v3/accounts/{account_id}/instruments/{instrument_name}/candles?granularity={granularity}", 
                 headers=self.headers)
         response_json = response.json()
-        logging.debug(response_json)
+        # logging.debug(response_json)
         
         # normalized_candle_spec = candle_spec.replace(':','-')
         self.dump_to_file(f'account-candles-{instrument_name}-{granularity}.json', response_json)

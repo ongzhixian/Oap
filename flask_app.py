@@ -1,8 +1,10 @@
 import json
 import logging
 
+import argparse
+
 from time import sleep
-from os import path
+from os import path, remove
 from oap import app
 from oap.modules.oanda import OandaApi
 
@@ -21,6 +23,7 @@ def setup_default_logging():
         root_logger.setLevel(logging.NOTSET)
         root_logger.addHandler(console_logger)
         logging.debug("Default logging configured.")
+        # logging.getLogger("mplfinance").setLevel(logging.WARNING)
     except Exception as e:
         logging.error(e)
 
@@ -97,9 +100,11 @@ def dump_chart_for_instrument(instrument, instrument_display_name, ma_period=20,
     df['ewm'] = df['Close'].ewm(span=ema_period, adjust=False).mean()
     index_df = df.set_index('time')
 
-    mpf.plot(index_df,type='line', volume=True, title=instrument_display_name, savefig=f'./pic-dump/{instrument}-close-plot.png')
-
-    print(f"df shape: {df.shape}")
+    save_file_path = f'./pic-dump/{instrument}-close-plot.png'
+    if path.exists(save_file_path):
+        remove(save_file_path) 
+    mpf.plot(index_df,type='line', volume=True, title=instrument_display_name, savefig=save_file_path)
+    # print(f"df shape: {df.shape}")
 
 
 def post_chart(instrument):
@@ -164,25 +169,99 @@ def post_chart(instrument):
 
 ################################################################################
 
-setup_default_logging()
+
+def dump_oanda_charts(post=False):
+    setup_default_logging()
+
+    # oandaApi.get_account_summary()
+    x = oandaApi.get_account_instruments(get_local=True)
+    instruments = x['instruments']
+
+    # fetch_candles_data(instruments)
+    # dump_instrument_class(instruments)
+
+    for instrument in instruments:
+        dump_chart_for_instrument(instrument['name'], instrument['displayName'])
+
+    if post:
+        for instrument in instruments:
+            post_chart(instrument['name'])
+
+
+def get_argument_parser():
+    # Setup ArgumentParser
+    parser = argparse.ArgumentParser()
+    # parser.add_argument("command", help="echo the string you use here")
+    parser.add_argument("-c", "--command", choices=['dump-oanda', 'test'], help="Some operation command")
+    parser.add_argument("-a", "--arguments", help="Some arguments to complement command")
+    # parser.add_argument("-v", "--verbosity", type=int, help="increase output verbosity")
+    # parser.add_argument("-v", "--verbosity", type=int, choices=[0, 1, 2], help="increase output verbosity")
+    # parser.add_argument("-v", "--verbosity", action="count", default=0, help="increase output verbosity")
+    # parser.add_argument("echo", help="echo the string you use here")
+    # parser.add_argument("square", help="display a square of a given number", type=int)
+    return parser
+
+
+parser = get_argument_parser()
+args = parser.parse_args()
+
+# print(args.command)
+# print(args.sub_command)
+# print(args.echo)
+# print(args.square**2)
+
+print(f'Command: [{args.command}]')
+
+def test():
+    print('test() called.')
+
+# import sys
+# print('Number of arguments:', len(sys.argv), 'arguments.')
+# print('Argument List:', str(sys.argv))
+
+########################################
+
 app_path = path.dirname(path.abspath(__file__))
 app_secrets = get_secrets(app_path)
 
 oandaApi = OandaApi(app_secrets, app_path)
-# oandaApi.get_account_summary()
-x = oandaApi.get_account_instruments(get_local=True)
-instruments = x['instruments']
-# fetch_candles_data(instruments)
-# dump_instrument_class(instruments)
 
-# dump_chart_for_instrument('XAU_USD')
-# post_chart()
+commands = {
+    'dump-oanda' : dump_oanda_charts,
+    'test': test
+}
+
+commands[args.command]()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# setup_default_logging()
+# app_path = path.dirname(path.abspath(__file__))
+# app_secrets = get_secrets(app_path)
+
+# oandaApi = OandaApi(app_secrets, app_path)
+# # oandaApi.get_account_summary()
+# x = oandaApi.get_account_instruments(get_local=True)
+# instruments = x['instruments']
+# fetch_candles_data(instruments)
+# # dump_instrument_class(instruments)
 
 # for instrument in instruments:
 #     dump_chart_for_instrument(instrument['name'], instrument['displayName'])
 
-for instrument in instruments:
-    post_chart(instrument['name'])
+# for instrument in instruments:
+#     post_chart(instrument['name'])
 
 # KIV
 # candle_spec = 'EUR_USD:D:M'
