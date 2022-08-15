@@ -177,7 +177,7 @@ def dump_oanda_charts(post=False):
     x = oandaApi.get_account_instruments(get_local=True)
     instruments = x['instruments']
 
-    # fetch_candles_data(instruments)
+    fetch_candles_data(instruments)
     # dump_instrument_class(instruments)
 
     for instrument in instruments:
