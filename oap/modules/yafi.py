@@ -24,15 +24,15 @@ class YaFiApi(object):
         # https://query1.finance.yahoo.com/v8/finance/chart/BN4.SI
         api_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yami_ticker}?range={range}&granularity={granularity}"
         request = urllib.request.Request(api_url)
-        with urllib.request.urlopen(request) as response:
-            json_data = json.loads(response.read().decode("utf-8"))
-        # Save the JSON data
-        self.dump_to_file(f'{yami_ticker}-{range}-{granularity}.json', json_data)
-        # chart_json = json_data['chart']
-        # result = chart_json['result'][0]
-        # meta = chart_json['result'][0]['meta']
-        # timestamp = chart_json['result'][0]['timestamp']
-        # indicators = chart_json['result'][0]['indicators']
+        try:
+            with urllib.request.urlopen(request) as response:
+                json_data = json.loads(response.read().decode("utf-8"))
+            # Save the JSON data
+            self.dump_to_file(f'{yami_ticker}-{range}-{granularity}.json', json_data)
+            return True
+        except Exception:
+            return False
+
 
     def debug_sgx(self):
         json_data = self.get_from_file(f'C09.SI-max-1mo.json')
@@ -100,3 +100,7 @@ class YaFiApi(object):
 
 # GoFi
 # https://www.google.com/finance/quote/C09:SGX
+
+
+# Reuters?
+# https://www.reuters.com/markets/companies/ETEL.SI

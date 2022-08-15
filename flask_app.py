@@ -206,14 +206,63 @@ def get_argument_parser():
     return parser
 
 
+def get_list_of_sgx_tickers_from_file():
+    ticker_list = []
+    import re
+    regex = r"(?P<name>.{50})(?P<status>.{10})(?P<isin>.{20})(?P<code>.{10})(?P<counter>.+)"
+    with open('./data/sgx-tickers.txt', 'r', encoding='UTF8') as in_file:
+        in_file.readline() # skip first header line
+        for line in in_file:
+            match_result = re.match(regex, line)
+            if match_result is None:
+                continue
+            code = match_result.group('code').strip()
+            ticker_list.append(code)
+    
+    tickers_blacklist_path = './data/sgx-tickers-blacklist.txt'
+    if path.exists(tickers_blacklist_path):
+        ticker_blacklist = []                
+        with open(tickers_blacklist_path, 'r', encoding='UTF8') as in_file:
+            for line in in_file:
+                ticker_blacklist.append(line.strip())
+        print(len(ticker_blacklist))
 
+        for ticker in ticker_blacklist:
+            print('removing ticker:', ticker)
+            ticker_list.remove(ticker)
+    return ticker_list
+
+def write_to_sgx_blacklist(ticker):
+    with open('./data/sgx-tickers-blacklist.txt', 'a', encoding='UTF8') as out_file:
+        out_file.write(f'{ticker}\n')
+
+def write_to_sgx_whitelist(ticker):
+    with open('./data/sgx-tickers-whitelist.txt', 'a', encoding='UTF8') as out_file:
+        out_file.write(f'{ticker}\n')
 
 def grab_sgx():
-    tickers = ['BN4', 'C09']
+    # tickers = ['BN4', 'C09']
+    tickers = get_list_of_sgx_tickers_from_file()
+    # print(len(tickers))
+    
+    ticker_white_list = []
+    ticker_blacklist = []
+    # tickers = ['AZG']
     ymic = "SI"
     for ticker in tickers:
-        yaFiApi.get_sgx_data(f"{ticker}.{ymic}")
+        if not yaFiApi.get_sgx_data(f"{ticker}.{ymic}"):
+            # ticker_blacklist.append(ticker)
+            write_to_sgx_blacklist(ticker)
+            print(f"{ticker}.{ymic} failed")
+        else:
+            write_to_sgx_whitelist(ticker)
         sleep(1) # sleep 1 second
+    # with open('./data/sgx-tickers-blacklist.txt', 'a', encoding='UTF8') as out_file:
+    #     for ticker in ticker_blacklist:
+    #         out_file.write(f'{ticker}\n')
+    # with open('./data/sgx-tickers-whitelist.txt', 'a', encoding='UTF8') as out_file:
+    #     for ticker in ticker_white_list:
+    #         out_file.write(f'{ticker}\n')
         
 
 
