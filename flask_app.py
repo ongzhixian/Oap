@@ -192,7 +192,7 @@ def get_argument_parser():
     # Setup ArgumentParser
     parser = argparse.ArgumentParser()
     # parser.add_argument("command", help="echo the string you use here")
-    parser.add_argument("-c", "--command", choices=['dump-oanda', 'test'], help="Some operation command")
+    parser.add_argument("-c", "--command", choices=['dump-oanda', 'grab-sgx', 'test'], help="Some operation command")
     parser.add_argument("-a", "--arguments", help="Some arguments to complement command")
     # parser.add_argument("-v", "--verbosity", type=int, help="increase output verbosity")
     # parser.add_argument("-v", "--verbosity", type=int, choices=[0, 1, 2], help="increase output verbosity")
@@ -201,6 +201,20 @@ def get_argument_parser():
     # parser.add_argument("square", help="display a square of a given number", type=int)
     return parser
 
+
+
+
+def grab_sgx():
+    tickers = ['BN4', 'C09']
+    ymic = "SI"
+    for ticker in tickers:
+        api.get_sgx_data(f"{ticker}.{ymic}")
+        sleep(100) # meaning to pull 10 per second
+        
+
+
+
+################################################################################
 
 parser = get_argument_parser()
 args = parser.parse_args()
@@ -226,8 +240,13 @@ app_secrets = get_secrets(app_path)
 
 oandaApi = OandaApi(app_secrets, app_path)
 
+from oap.modules.yafi import YaFiApi
+api = YaFiApi(app_secrets, app_path)
+
+
 commands = {
     'dump-oanda' : dump_oanda_charts,
+    'grab-sgx' : grab_sgx,
     'test': test
 }
 
