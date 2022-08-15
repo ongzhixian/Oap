@@ -35,22 +35,34 @@ class YaFiApi(object):
         # indicators = chart_json['result'][0]['indicators']
 
     def debug_sgx(self):
-        json_data = self.get_from_file(f'BN4.SI-max-1mo.json')
+        json_data = self.get_from_file(f'C09.SI-max-1mo.json')
         chart_json = json_data['chart']
         result = chart_json['result'][0]
         meta = chart_json['result'][0]['meta']
         timestamp = chart_json['result'][0]['timestamp']
         indicators = chart_json['result'][0]['indicators']
         ohlcv = indicators['quote'][0]
-        open = indicators['quote'][0]['open']
-        close = indicators['quote'][0]['close']
-        high = indicators['quote'][0]['high']
-        low = indicators['quote'][0]['low']
-        adjclose = indicators['adjclose'][0]['adjclose']
+        qopen = indicators['quote'][0]['open']
+        qclose = indicators['quote'][0]['close']
+        qhigh = indicators['quote'][0]['high']
+        qlow = indicators['quote'][0]['low']
+        qvolume = indicators['quote'][0]['volume']
+        qadjclose = indicators['adjclose'][0]['adjclose']
         # So to properly transpose, we should iterate over the timestamp
         # Ya! And think about how the transpose should work for reading the values
-        breakpoint()
+        # Ideally, we want to re-format the data into this format: ['time','complete', 'Volume', 'Open', 'High', 'Low', 'Close']
+        import time
+        
+        d_list = []
+        for i in range(len(timestamp)):
+            # print(timestamp[i], volume[i], open[i], close[i], high[i], low[i], adjclose[i])
+            d = (time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(timestamp[i])), qvolume[i], qopen[i], qhigh[i], qlow[i], qclose[i], qadjclose[i])
+            d_list.append(d)
         # time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(1183219200))
+        import csv
+        with open('./data-dump/C09.SI-max-1mo.csv', 'w', encoding='utf8', newline='') as out_file:
+            csv_writer = csv.writer(out_file)
+            csv_writer.writerows(d_list)
 
 
 # https://query1.finance.yahoo.com/v8/finance/chart/BN4.SI?region=US&lang=en-US&includePrePost=false&interval=1mo&useYfid=true&range=max&corsDomain=finance.yahoo.com&.tsrc=finance
@@ -72,3 +84,19 @@ class YaFiApi(object):
 # "10y",    --
 # "ytd",    --
 # "max"     --
+
+# https://query1.finance.yahoo.com/v7/finance/quote?symbols=C09.SI&fields=exchangeTimezoneName,exchangeTimezoneShortName,regularMarketTime,gmtOffSetMilliseconds&region=US&lang=en-US
+# https://query1.finance.yahoo.com/v7/finance/quote?formatted=true&crumb=ANSQqUYemPa&lang=en-US&region=US&symbols=C09.SI&fields=messageBoardId,longName,shortName,marketCap,underlyingSymbol,underlyingExchangeSymbol,headSymbolAsString,regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketVolume,uuid,regularMarketOpen,fiftyTwoWeekLow,fiftyTwoWeekHigh,toCurrency,fromCurrency,toExchange,fromExchange&corsDomain=finance.yahoo.com
+# https://query2.finance.yahoo.com/v10/finance/quoteSummary/C09.SI?formatted=true&crumb=ANSQqUYemPa&lang=en-US&region=US&modules=summaryProfile,financialData,recommendationTrend,upgradeDowngradeHistory,defaultKeyStatistics,calendarEvents,esgScores,details&corsDomain=finance.yahoo.com
+
+# https://query1.finance.yahoo.com/v7/finance/spark?symbols=RTY=F&range=1d&interval=5m&indicators=close&includeTimestamps=false&includePrePost=false&corsDomain=finance.yahoo.com&.tsrc=finance
+# https://query1.finance.yahoo.com/v6/finance/recommendationsbysymbol/C09.SI
+
+
+# https://query1.finance.yahoo.com/v8/finance/chart/C09.SI?region=US&lang=en-US&includePrePost=false&interval=2m&useYfid=true&range=1d&corsDomain=finance.yahoo.com&.tsrc=finance
+# https://query1.finance.yahoo.com/v7/finance/spark?symbols=CL=F&range=1d&interval=5m&indicators=close&includeTimestamps=false&includePrePost=false&corsDomain=finance.yahoo.com&.tsrc=finance
+
+
+
+# GoFi
+# https://www.google.com/finance/quote/C09:SGX
