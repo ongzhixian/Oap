@@ -1,0 +1,113 @@
+{
+    "quoteResponse": {
+        "result": [
+            {
+                "fullExchangeName": "SES",
+                "symbol": "C09.SI",
+                "fiftyTwoWeekLowChangePercent": {
+                    "raw": 0.2876712,
+                    "fmt": "28.77%"
+                },
+                "gmtOffSetMilliseconds": 28800000,
+                "regularMarketOpen": {
+                    "raw": 8.38,
+                    "fmt": "8.38"
+                },
+                "language": "en-US",
+                "regularMarketTime": {
+                    "raw": 1660540772,
+                    "fmt": "1:19PM SGT"
+                },
+                "regularMarketChangePercent": {
+                    "raw": 1.4388475,
+                    "fmt": "1.44%"
+                },
+                "quoteType": "EQUITY",
+                "uuid": "7d296b1d-44fa-3151-9dbb-c305a3d8da27",
+                "regularMarketDayRange": {
+                    "raw": "8.35 - 8.47",
+                    "fmt": "8.35 - 8.47"
+                },
+                "fiftyTwoWeekLowChange": {
+                    "raw": 1.8899999,
+                    "fmt": "1.89"
+                },
+                "fiftyTwoWeekHighChangePercent": {
+                    "raw": -0.009535684,
+                    "fmt": "-0.95%"
+                },
+                "typeDisp": "Equity",
+                "regularMarketDayHigh": {
+                    "raw": 8.47,
+                    "fmt": "8.47"
+                },
+                "tradeable": false,
+                "currency": "SGD",
+                "sharesOutstanding": {
+                    "raw": 906900992,
+                    "fmt": "906.901M",
+                    "longFmt": "906,900,992"
+                },
+                "fiftyTwoWeekHigh": {
+                    "raw": 8.541449,
+                    "fmt": "8.54"
+                },
+                "regularMarketPreviousClose": {
+                    "raw": 8.34,
+                    "fmt": "8.34"
+                },
+                "exchangeTimezoneName": "Asia/Singapore",
+                "marketCap": {
+                    "raw": 7672382464,
+                    "fmt": "7.672B",
+                    "longFmt": "7,672,382,464"
+                },
+                "fiftyTwoWeekHighChange": {
+                    "raw": -0.081448555,
+                    "fmt": "-0.08"
+                },
+                "regularMarketChange": {
+                    "raw": 0.119999886,
+                    "fmt": "0.12"
+                },
+                "fiftyTwoWeekRange": {
+                    "raw": "6.57 - 8.541449",
+                    "fmt": "6.57 - 8.54"
+                },
+                "exchangeDataDelayedBy": 10,
+                "firstTradeDateMilliseconds": 946861200000,
+                "exchangeTimezoneShortName": "SGT",
+                "regularMarketPrice": {
+                    "raw": 8.46,
+                    "fmt": "8.46"
+                },
+                "customPriceAlertConfidence": "LOW",
+                "marketState": "REGULAR",
+                "fiftyTwoWeekLow": {
+                    "raw": 6.57,
+                    "fmt": "6.57"
+                },
+                "regularMarketVolume": {
+                    "raw": 1333400,
+                    "fmt": "1.333M",
+                    "longFmt": "1,333,400"
+                },
+                "market": "sg_market",
+                "quoteSourceName": "Delayed Quote",
+                "messageBoardId": "finmb_410611",
+                "priceHint": 2,
+                "exchange": "SES",
+                "sourceInterval": 20,
+                "regularMarketDayLow": {
+                    "raw": 8.35,
+                    "fmt": "8.35"
+                },
+                "region": "US",
+                "shortName": "CityDev",
+                "triggerable": false,
+                "longName": "City Developments Limited"
+            }
+        ],
+        "error": null
+    }
+}

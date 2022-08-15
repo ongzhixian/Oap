@@ -56,7 +56,7 @@ class YaFiApi(object):
         d_list = []
         for i in range(len(timestamp)):
             # print(timestamp[i], volume[i], open[i], close[i], high[i], low[i], adjclose[i])
-            d = (time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(timestamp[i])), qvolume[i], qopen[i], qhigh[i], qlow[i], qclose[i], qadjclose[i])
+            d = (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp[i])), qvolume[i], qopen[i], qhigh[i], qlow[i], qclose[i], qadjclose[i])
             d_list.append(d)
         # time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(1183219200))
         import csv
