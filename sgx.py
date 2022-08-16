@@ -9,6 +9,7 @@ from oap import app
 from oap.modules.oanda import OandaApi
 
 import urllib.parse
+from urllib.parse import quote
 
 import pandas as pd
 from datetime import datetime
@@ -114,26 +115,45 @@ def add_tickers_to_database(ticker_list):
     with sqlite3.connect(in_file_path) as connection:
         connection_cursor = connection.cursor()
         ensure_ticker_table_exists(connection_cursor)
+        # Insert ticker to database table if not in table
         data = []
         for ticker in ticker_list:
             data.append((ticker, ticker))
         sql = """
 INSERT INTO ticker (name) 
 SELECT 	? AS 'name'
-WHERE	NOT EXISTS (SELECT 1 FROM ticker WHERE 	name = ?)
+WHERE	NOT EXISTS (SELECT 1 FROM ticker WHERE 	name = ?);
 """
         connection_cursor.executemany(sql, data)
 
-    # Insert a row of data
-    # cur.execute("INSERT INTO stocks VALUES ('2006-01-05','BUY','RHAT',100,35.14)")
 
-    # Save (commit) the changes
-    # connection.commit()
+def get_white_listed_tickers():
+    tickers = []
+    in_file_path = path.join(app_path, 'data', 'sgx-tickers-whitelist.txt')
+    with open(in_file_path, 'r', encoding='UTF8') as in_file:
+        for line in in_file:
+            tickers.append(line.strip())
+    return tickers
 
-    # We can also close the connection if we are done with it.
-    # Just be sure any changes have been committed or they will be lost.
-    # connection.close()
 
+def white_list_tickers():
+    white_listed_tickers = get_white_listed_tickers()
+
+    in_file_path = path.join(app_path, 'data-dump', 'sgx', 'sgx.sqlite3')
+    import sqlite3
+    with sqlite3.connect(in_file_path) as connection:
+        connection_cursor = connection.cursor()
+        ensure_ticker_table_exists(connection_cursor)
+        data = []
+        for ticker in white_listed_tickers:
+            data.append((ticker,))
+        sql = """
+UPDATE ticker SET status = 1 WHERE name = ?;
+"""
+        connection_cursor.executemany(sql, data)
+    
+    
+    
 
 ################################################################################
 
@@ -142,7 +162,6 @@ app_secrets = get_secrets(app_path)
 
 setup_default_logging()
 
-from urllib.parse import quote
 
 # SGX Data Feed
 # Steps:
@@ -151,4 +170,4 @@ from urllib.parse import quote
 get_instrument_list_from_sgx()
 ticker_list = get_tickers_from_isin_file()
 add_tickers_to_database(ticker_list)
-
+white_list_tickers()
