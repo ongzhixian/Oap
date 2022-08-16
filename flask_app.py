@@ -237,6 +237,7 @@ def write_to_sgx_blacklist(ticker):
         out_file.write(f'{ticker}\n')
 
 def write_to_sgx_whitelist(ticker):
+    return
     with open('./data/sgx-tickers-whitelist.txt', 'a', encoding='UTF8') as out_file:
         out_file.write(f'{ticker}\n')
 
@@ -249,14 +250,19 @@ def grab_sgx():
     ticker_blacklist = []
     # tickers = ['AZG']
     ymic = "SI"
+    total_tickers = len(tickers)
+    progress_counter = 0
     for ticker in tickers:
+        
+        progress_counter = progress_counter + 1
+        print(f'processing ticker: {ticker} ; Progress {progress_counter}/{total_tickers} ({(progress_counter/total_tickers)*100:.2f}%)')
         if not yaFiApi.get_sgx_data(f"{ticker}.{ymic}"):
             # ticker_blacklist.append(ticker)
             write_to_sgx_blacklist(ticker)
             print(f"{ticker}.{ymic} failed")
         else:
             write_to_sgx_whitelist(ticker)
-        sleep(1) # sleep 1 second
+        sleep(0.20) # sleep 1 second
     # with open('./data/sgx-tickers-blacklist.txt', 'a', encoding='UTF8') as out_file:
     #     for ticker in ticker_blacklist:
     #         out_file.write(f'{ticker}\n')

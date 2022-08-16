@@ -20,6 +20,10 @@ class YaFiApi(object):
             return json.load(in_file)
 
     def get_sgx_data(self, yami_ticker, range='max', granularity='1mo'):
+        data_file_name = f'{yami_ticker}-{range}-{granularity}.json'
+        out_file_path = path.join(self.app_path, 'data-dump', data_file_name)
+        if path.exists(out_file_path):
+            return True # Skip
         # There are a couple of URLs used to get the SGX data from Yahoo Finance.
         # https://query1.finance.yahoo.com/v8/finance/chart/BN4.SI
         api_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yami_ticker}?range={range}&granularity={granularity}"
@@ -28,7 +32,7 @@ class YaFiApi(object):
             with urllib.request.urlopen(request) as response:
                 json_data = json.loads(response.read().decode("utf-8"))
             # Save the JSON data
-            self.dump_to_file(f'{yami_ticker}-{range}-{granularity}.json', json_data)
+            self.dump_to_file(data_file_name, json_data)
             return True
         except Exception:
             return False
