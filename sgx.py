@@ -152,8 +152,39 @@ UPDATE ticker SET status = 1 WHERE name = ?;
 """
         connection_cursor.executemany(sql, data)
     
-    
-    
+def get_yafi_chart_json_data(ticker):
+    in_file_path = path.join(app_path, 'data-dump', 'yafi', f'{ticker}.SI-max-1mo.json')
+    with open(in_file_path, 'r', encoding='UTF8') as in_file:
+        return json.load(in_file)
+    return None
+
+
+def update_instrument_type(sql_update_data):
+    in_file_path = path.join(app_path, 'data-dump', 'sgx', 'sgx.sqlite3')
+    import sqlite3
+    with sqlite3.connect(in_file_path) as connection:
+        connection_cursor = connection.cursor()
+        sql = """
+UPDATE ticker SET type = ? WHERE name = ?;
+"""
+        connection_cursor.executemany(sql, sql_update_data)
+
+
+def update_tickers_instrument_type():
+    sql_update_data = []
+    white_listed_tickers = get_white_listed_tickers()
+    for ticker in white_listed_tickers:
+        chart_json_data = get_yafi_chart_json_data(ticker)
+        meta_json_data = chart_json_data['chart']['result'][0]['meta']
+        sql_update_data.append((meta_json_data['instrumentType'], ticker))
+    update_instrument_type(sql_update_data)
+    # YAFI's InstrumentType:
+    # BOND       -- No data; maybe because invalid range/data granularity?
+    # EQUITY     -- OK
+    # ETF        -- OK
+    # MUTUALFUND -- OK
+    # WARRANT    -- No data; maybe because invalid range/data granularity?
+
 
 ################################################################################
 
@@ -171,3 +202,4 @@ get_instrument_list_from_sgx()
 ticker_list = get_tickers_from_isin_file()
 add_tickers_to_database(ticker_list)
 white_list_tickers()
+update_tickers_instrument_type()
