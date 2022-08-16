@@ -3,13 +3,16 @@ import logging
 import re
 import argparse
 
+
 from time import sleep
 from os import path, remove
 from oap import app
 from oap.modules.oanda import OandaApi
 
+import urllib.request
 import urllib.parse
 from urllib.parse import quote
+
 
 import pandas as pd
 from datetime import datetime
@@ -51,25 +54,33 @@ def get_secrets(app_path):
 #     except Exception:
 #         return False
 
-from oap.modules.inet import save_data_from_url
+# from oap.modules.inet import save_data_from_url
 
 def get_instrument_list_from_sgx():
-    # Note: We cannot use Python request to get the data from SGX;
-    #       We get a HTTP 403 (Forbidden) response.
-    #       Not sure if its because of headers or the request itself (missing cookies?).
-    #       In any case, KIV for now.
+    # Note: We cannot use a plain-old Python request to get the data from SGX;
+    #       We will get a HTTP 403 (Forbidden) response.
+    #       Solution: Add a User-Agent string
     #       Assuming that we were able to get the file and store in as sgx-isin.txt
     #       D:\src\github\oap\data-dump\sgx
-    logging.info("Getting ISINs from SGX (v0)")
-    # url = 'https://links.sgx.com/1.0.0/isin/1/16 Aug 2022'
-    # today = quote(datetime.today().strftime('%d %b %Y'))
-    # url = f'https://links.sgx.com/1.0.0/isin/1/{today}'
-    # url = 'https://links.sgx.com/FileOpen/01%20Aug%202022.ashx?App=ISINCode&FileID=1&FileType=csv'
-    # save_file_path = path.join(app_path, 'data-dump', 'sgx-isin.dat')
-    # logging.info("1. Get SGX list of instruments")
-    # save_data_from_url(url, save_file_path)
-    # logging.info(url)
-    # logging.info(save_file_path)
+    logging.info("Getting ISINs from SGX")
+    today = quote(datetime.today().strftime('%d %b %Y'))
+    url = f'https://links.sgx.com/1.0.0/isin/1/{today}'
+    
+    request = urllib.request.Request(
+        url, 
+        data=None, 
+        headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0'
+        }
+    )
+
+    with urllib.request.urlopen(request) as response:
+        sgx_isins = response.read().decode("utf-8")
+
+    out_file_path = path.join(app_path, 'data-dump', 'sgx', 'sgx-isin.txt')
+    with open(out_file_path, 'w', encoding='utf-8') as out_file:
+        out_file.write(sgx_isins)
+
 
 def get_tickers_from_isin_file():
     in_file_path = path.join(app_path, 'data-dump', 'sgx', 'sgx-isin.txt')
@@ -81,6 +92,8 @@ def get_tickers_from_isin_file():
     with open(in_file_path, 'r', encoding='UTF8') as in_file:
         in_file.readline() # skip first header line
         for line in in_file:
+            if len(line.strip()) <= 0:
+                continue
             match_result = re.match(sgx_isin_layout, line)
             if match_result is None:
                 continue
@@ -125,6 +138,7 @@ SELECT 	? AS 'name'
 WHERE	NOT EXISTS (SELECT 1 FROM ticker WHERE 	name = ?);
 """
         connection_cursor.executemany(sql, data)
+    logging.info("Add tickers to database")
 
 
 def get_white_listed_tickers():
@@ -151,6 +165,7 @@ def white_list_tickers():
 UPDATE ticker SET status = 1 WHERE name = ?;
 """
         connection_cursor.executemany(sql, data)
+    logging.info("White list tickers")
     
 def get_yafi_chart_json_data(ticker):
     in_file_path = path.join(app_path, 'data-dump', 'yafi', f'{ticker}.SI-max-1mo.json')
@@ -178,6 +193,7 @@ def update_tickers_instrument_type():
         meta_json_data = chart_json_data['chart']['result'][0]['meta']
         sql_update_data.append((meta_json_data['instrumentType'], ticker))
     update_instrument_type(sql_update_data)
+    logging.info("Update tickers instrument type")
     # YAFI's InstrumentType:
     # BOND       -- No data; maybe because invalid range/data granularity?
     # EQUITY     -- OK
