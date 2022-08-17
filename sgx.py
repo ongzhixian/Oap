@@ -62,8 +62,8 @@ def get_instrument_list_from_sgx():
     #       Solution: Add a User-Agent string
     #       Assuming that we were able to get the file and store in as sgx-isin.txt
     #       D:\src\github\oap\data-dump\sgx
-    logging.info("Getting ISINs from SGX")
     today = quote(datetime.today().strftime('%d %b %Y'))
+    logging.info(f"Getting ISINs from SGX for {today}")
     url = f'https://links.sgx.com/1.0.0/isin/1/{today}'
     
     request = urllib.request.Request(
@@ -201,6 +201,66 @@ def update_tickers_instrument_type():
     # MUTUALFUND -- OK
     # WARRANT    -- No data; maybe because invalid range/data granularity?
 
+def get_white_list_tickers_in_database():
+    in_file_path = path.join(app_path, 'data-dump', 'sgx', 'sgx.sqlite3')
+    import sqlite3
+    with sqlite3.connect(in_file_path) as connection:
+        connection_cursor = connection.cursor()
+        ensure_ticker_table_exists(connection_cursor)
+        sql = """
+select name from ticker where status = 1;
+"""
+        return [record[0] for record in connection_cursor.execute(sql).fetchall()]
+
+
+def dump_json_data_to_file(file_name, json_data):
+    out_file_path = path.join(app_path, 'data-dump', file_name)
+    with open(out_file_path, 'w', encoding='UTF8') as out_file:
+        out_file.write(json.dumps(json_data, indent=4))
+
+
+def fetch_chart_json_from_yafi(yami_ticker, range='max', granularity='1mo'):
+    logging.info(f"Fetching chart data from YAFI: {yami_ticker}")
+    data_file_name = f'{yami_ticker}-{range}-{granularity}.json'
+    out_file_path = path.join(app_path, 'data-dump', data_file_name)
+    if path.exists(out_file_path):
+        return True # Skip
+    # There are a couple of URLs used to get the SGX data from Yahoo Finance.
+    # https://query1.finance.yahoo.com/v8/finance/chart/BN4.SI
+    api_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yami_ticker}?range={range}&granularity={granularity}"
+    request = urllib.request.Request(api_url)
+    try:
+        with urllib.request.urlopen(request) as response:
+            json_data = json.loads(response.read().decode("utf-8"))
+        # Save the JSON data
+        dump_json_data_to_file(data_file_name, json_data)
+        return True
+    except Exception:
+        return False
+
+
+def blacklist_tickers(sql_update_data):
+    in_file_path = path.join(app_path, 'data-dump', 'sgx', 'sgx.sqlite3')
+    import sqlite3
+    with sqlite3.connect(in_file_path) as connection:
+        connection_cursor = connection.cursor()
+        sql = """
+UPDATE ticker SET status = 0 WHERE name = ?;
+"""
+        connection_cursor.executemany(sql, sql_update_data)
+
+
+def download_yafi_chart_json():
+    blacklist = []
+    white_list_tickers = get_white_list_tickers_in_database()
+    for ticker in white_list_tickers:
+        if not fetch_chart_json_from_yafi(ticker):
+            blacklist.append((ticker,))
+    # Update black list
+    if len(blacklist) > 0:
+        blacklist_tickers(blacklist)
+        logging.warn(f"Blacklisted {len(blacklist)} entries.")
+
 
 ################################################################################
 
@@ -214,8 +274,9 @@ setup_default_logging()
 # Steps:
 # 1. Get SGX list of instruments (ISINs)
 # 2. Get counters from ISIN file
-get_instrument_list_from_sgx()
+# get_instrument_list_from_sgx()
 ticker_list = get_tickers_from_isin_file()
-add_tickers_to_database(ticker_list)
-white_list_tickers()
-update_tickers_instrument_type()
+# add_tickers_to_database(ticker_list)
+# white_list_tickers()
+# update_tickers_instrument_type()
+download_yafi_chart_json()
