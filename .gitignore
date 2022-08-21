@@ -129,6 +129,6 @@ dmypy.json
 .pyre/
 
 # Custom
-*-secrets.json
+**/*secrets.json
 data-dump/
 pic-dump/
