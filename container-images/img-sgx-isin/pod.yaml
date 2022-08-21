@@ -1,7 +1,12 @@
+---
+# Source: ingress-nginx/templates/controller-service-webhook.yaml
 apiVersion: v1
 kind: Pod
 metadata:
   name: sgx-isin
+  labels:
+    app: sgx-isin
+    role: foreman
 spec:
   containers:
   - image: sgx-isin:v1
