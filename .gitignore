@@ -128,8 +128,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Custom
+# ZX Custom
 **/*secrets.json
 **/*secrets.yaml
 data-dump/
 pic-dump/
+ako.ps1
+mk.ps1

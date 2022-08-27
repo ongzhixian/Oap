@@ -33,23 +33,23 @@ class Logger():
         )
 
     def debug(self, message, **kwargs):
-        """DEBUG : 10"""
+        """DEBUG       10"""
         logging.debug(sm(message, **kwargs))
 
     def info(self, message, **kwargs):
-        """INFO : 20"""
+        """INFO        20"""
         logging.info(sm(message, **kwargs))
 
     def warn(self, message, **kwargs):
-        """WARNING : 30"""
+        """WARNING     30"""
         logging.warn(sm(message, **kwargs))
 
     def error(self, message, **kwargs):
-        """ERROR : 40"""
+        """ERROR       40"""
         logging.error(sm(message, **kwargs))
 
     def critical(self, message, **kwargs):
-        """CRITICAL : 50"""
+        """CRITICAL    50"""
         logging.critical(sm(message, **kwargs))
 
     
