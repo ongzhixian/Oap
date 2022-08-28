@@ -1,0 +1,7 @@
+#Ignore the git and cache folders
+.git
+.cache
+__pycache__
+.venv
+mk.ps1
+ako.ps1

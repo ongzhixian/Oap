@@ -102,13 +102,7 @@ def setup_logging():
 if __name__ == "__main__":
     log = setup_logging()
     url_parameters = get_cloudamqp_url_parameters()
-
-    # log.info("Program start", source="program", event="start")
-    # for x in range(3600):
-    #     time.sleep(1)
-    #     log.info("Looping", source="program", event="loop", arg=x)
     download_sgx_instrument_list()
     ticker_list = get_tickers_from_instrument_list()
     publish_tickers(url_parameters, ticker_list)
     log.info("Program complete", source="program", event="complete")
-    exit(0)
