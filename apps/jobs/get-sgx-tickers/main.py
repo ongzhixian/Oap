@@ -104,5 +104,6 @@ if __name__ == "__main__":
     url_parameters = get_cloudamqp_url_parameters()
     download_sgx_instrument_list()
     ticker_list = get_tickers_from_instrument_list()
+    # filter ticker_list with blacklist
     publish_tickers(url_parameters, ticker_list)
     log.info("Program complete", source="program", event="complete")
